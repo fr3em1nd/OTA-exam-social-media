@@ -4,11 +4,8 @@ import { useMemo } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
   flexRender,
   type ColumnDef,
-  type SortingState,
 } from '@tanstack/react-table'
 import { usePosts } from '@/lib/hooks'
 import { useDashboardStore } from '@/lib/stores/dashboard-store'
@@ -87,28 +84,40 @@ function PlatformBadge({ platform }: { platform: string }) {
   )
 }
 
-// Sortable column header
+// Sortable column header - uses Zustand store for server-side sorting
 function SortableHeader({
-  column,
+  columnId,
   children,
 }: {
-  column: {
-    getIsSorted: () => false | 'asc' | 'desc'
-    toggleSorting: (desc?: boolean) => void
-  }
+  columnId: string
   children: React.ReactNode
 }) {
-  const sorted = column.getIsSorted()
+  const { sortColumn, sortDirection, setSorting } = useDashboardStore()
+  const isActive = sortColumn === columnId
+  const currentDirection = isActive ? sortDirection : null
+
+  const handleClick = () => {
+    if (!isActive) {
+      // First click on a new column: sort descending
+      setSorting(columnId as typeof sortColumn, 'desc')
+    } else if (currentDirection === 'desc') {
+      // Second click: sort ascending
+      setSorting(columnId as typeof sortColumn, 'asc')
+    } else {
+      // Third click: sort descending again
+      setSorting(columnId as typeof sortColumn, 'desc')
+    }
+  }
 
   return (
     <button
       className="flex items-center gap-1 hover:text-foreground transition-colors"
-      onClick={() => column.toggleSorting(sorted === 'asc')}
+      onClick={handleClick}
     >
       {children}
-      {sorted === 'asc' ? (
+      {currentDirection === 'asc' ? (
         <ArrowUp className="h-4 w-4" />
-      ) : sorted === 'desc' ? (
+      ) : currentDirection === 'desc' ? (
         <ArrowDown className="h-4 w-4" />
       ) : (
         <ArrowUpDown className="h-4 w-4 opacity-50" />
@@ -190,7 +199,6 @@ export function PostsTable() {
     setPlatformFilter,
     sortColumn,
     sortDirection,
-    setSorting,
     openModal,
   } = useDashboardStore()
 
@@ -246,22 +254,22 @@ export function PostsTable() {
       },
       {
         accessorKey: 'likes',
-        header: ({ column }) => <SortableHeader column={column}>Likes</SortableHeader>,
+        header: () => <SortableHeader columnId="likes">Likes</SortableHeader>,
         cell: ({ row }) => formatNumber(row.getValue('likes')),
       },
       {
         accessorKey: 'comments',
-        header: ({ column }) => <SortableHeader column={column}>Comments</SortableHeader>,
+        header: () => <SortableHeader columnId="comments">Comments</SortableHeader>,
         cell: ({ row }) => formatNumber(row.getValue('comments')),
       },
       {
         accessorKey: 'shares',
-        header: ({ column }) => <SortableHeader column={column}>Shares</SortableHeader>,
+        header: () => <SortableHeader columnId="shares">Shares</SortableHeader>,
         cell: ({ row }) => formatNumber(row.getValue('shares')),
       },
       {
         accessorKey: 'engagement_rate',
-        header: ({ column }) => <SortableHeader column={column}>Eng. Rate</SortableHeader>,
+        header: () => <SortableHeader columnId="engagement_rate">Eng. Rate</SortableHeader>,
         cell: ({ row }) => {
           const rate = row.getValue('engagement_rate') as number | null
           return rate !== null ? `${rate.toFixed(1)}%` : 'N/A'
@@ -269,39 +277,19 @@ export function PostsTable() {
       },
       {
         accessorKey: 'posted_at',
-        header: ({ column }) => <SortableHeader column={column}>Posted</SortableHeader>,
+        header: () => <SortableHeader columnId="posted_at">Posted</SortableHeader>,
         cell: ({ row }) => formatDate(row.getValue('posted_at')),
       },
     ],
     []
   )
 
-  // Convert Zustand sorting state to TanStack Table format
-  const sorting: SortingState = [
-    {
-      id: sortColumn,
-      desc: sortDirection === 'desc',
-    },
-  ]
-
   const table = useReactTable({
     data: posts || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      sorting,
-    },
-    onSortingChange: (updater) => {
-      const newSorting = typeof updater === 'function' ? updater(sorting) : updater
-      if (newSorting.length > 0) {
-        setSorting(
-          newSorting[0].id as typeof sortColumn,
-          newSorting[0].desc ? 'desc' : 'asc'
-        )
-      }
-    },
+    // Note: Sorting is handled server-side via Supabase query
+    // We don't need client-side sorting here
   })
 
   if (isLoading) {
