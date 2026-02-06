@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -125,6 +125,12 @@ function EmptyChart() {
 export function EngagementChart() {
   const { chartViewType, setChartViewType } = useDashboardStore()
   const { data: metrics, isLoading, error } = useDailyMetrics(30)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Prevent Recharts dimension warning by waiting for mount
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Transform data for the chart
   const chartData = useMemo<ChartDataPoint[]>(() => {
@@ -140,7 +146,7 @@ export function EngagementChart() {
     }))
   }, [metrics])
 
-  if (isLoading) {
+  if (isLoading || !isMounted) {
     return <ChartSkeleton />
   }
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -25,6 +26,12 @@ interface DashboardContentProps {
 
 export function DashboardContent({ user }: DashboardContentProps) {
   const router = useRouter()
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Prevent hydration mismatch with Radix DropdownMenu
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const handleSignOut = async () => {
     const supabase = createClient()
