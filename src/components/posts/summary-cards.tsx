@@ -12,6 +12,7 @@ import {
   Percent,
   Trophy,
   Eye,
+  Activity,
 } from 'lucide-react'
 
 // Format numbers with K/M suffixes
@@ -62,8 +63,8 @@ function TrendIndicator({
 // Loading skeleton for cards
 function CardsSkeleton() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, i) => (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      {Array.from({ length: 5 }).map((_, i) => (
         <Card key={i}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <Skeleton className="h-4 w-24" />
@@ -82,7 +83,7 @@ function CardsSkeleton() {
 // Empty state for cards
 function EmptyCards() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Engagement</CardTitle>
@@ -126,6 +127,20 @@ function EmptyCards() {
           <p className="text-xs text-muted-foreground">No reach data yet</p>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Trend</CardTitle>
+          <Activity className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold flex items-center gap-2">
+            <Minus className="h-5 w-5 text-muted-foreground" />
+            0%
+          </div>
+          <p className="text-xs text-muted-foreground">No trend data yet</p>
+        </CardContent>
+      </Card>
     </div>
   )
 }
@@ -150,8 +165,16 @@ export function SummaryCards() {
     return <EmptyCards />
   }
 
+  const TrendIcon = summary.trendDirection === 'up' ? TrendingUp : summary.trendDirection === 'down' ? TrendingDown : Minus
+  const trendColorClass =
+    summary.trendDirection === 'up'
+      ? 'text-green-600'
+      : summary.trendDirection === 'down'
+        ? 'text-red-600'
+        : 'text-muted-foreground'
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Engagement</CardTitle>
@@ -159,11 +182,9 @@ export function SummaryCards() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{formatNumber(summary.totalEngagement)}</div>
-          <TrendIndicator
-            percentage={summary.trendPercentage}
-            direction={summary.trendDirection}
-            periodDays={summary.periodDays}
-          />
+          <p className="text-xs text-muted-foreground">
+            Likes + Comments + Shares
+          </p>
         </CardContent>
       </Card>
 
@@ -219,6 +240,22 @@ export function SummaryCards() {
           <div className="text-2xl font-bold">{formatNumber(summary.totalReach)}</div>
           <p className="text-xs text-muted-foreground">
             Unique accounts reached
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Trend</CardTitle>
+          <Activity className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className={`text-2xl font-bold flex items-center gap-2 ${trendColorClass}`}>
+            <TrendIcon className="h-5 w-5" />
+            {summary.trendPercentage}%
+          </div>
+          <p className="text-xs text-muted-foreground">
+            vs last {summary.periodDays} days
           </p>
         </CardContent>
       </Card>

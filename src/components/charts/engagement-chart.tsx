@@ -204,12 +204,14 @@ export function EngagementChart() {
                 tickLine={false}
                 axisLine={false}
                 interval="preserveStartEnd"
+                label={{ value: 'Date', position: 'insideBottom', offset: -5, fontSize: 12 }}
               />
               <YAxis
                 tick={{ fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={formatNumber}
+                label={{ value: 'Count', angle: -90, position: 'insideLeft', fontSize: 12 }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
