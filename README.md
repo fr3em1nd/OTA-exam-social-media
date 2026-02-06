@@ -4,7 +4,15 @@ A production-ready social media analytics dashboard built with Next.js 15, Supab
 
 ## Live Demo
 
-[Deploy to Vercel to see live demo]
+[[Deploy to Vercel to see live demo]](https://ota-exam-social-media.vercel.app/)
+
+Test Access:
+
+- Email: test.user.a@example.com
+- Password: Password123!
+ 
+- Email: test.user.b@example.com
+- Password: Password123!
 
 ## Tech Stack
 
